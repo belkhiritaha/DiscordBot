@@ -20,9 +20,11 @@ buffer = []
 
 cass.set_riot_api_key("RGAPI-2d972ef5-33b0-43bc-84d7-95a23fea9c02")
 
-summoner = Summoner(name="Sorry lm BIind", region="EUW")
+summoner = Summoner(name="Sondo25", region="EUW")
 print("match id: ", summoner.match_history[0].timeline.frames[5].events[2])
 #print([event for event in summoner.match_history[0].timeline.frames[1].events[0].type])
+buffer.append("heh")
+
 
 def resetGame():
     imposters[0] = random.randint(0,4)
@@ -52,9 +54,8 @@ def getRole(player):
         return 0
 
 def execResult(message):
-    a = [0]
-    exec("a[0] = " + message.content[6:])
-    return a[0]
+    exec("buffer.append(" + message.content[6:] + ")")
+    return buffer
 
 def doResult(message):
     k = 0
@@ -63,6 +64,7 @@ def doResult(message):
     
     range_loop = int(message.content[7:][:k])
     for i in range(range_loop):
+        print(message.content)
         exec(message.content[7:][k+1:])
         
     return message.content[7:][k+1:]
@@ -82,14 +84,29 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
+
+    len_buffer = len(buffer)
+
+    if message.content.lower() == "buffer":
+        await message.channel.send(buffer)
+
+    if message.content.lower() == "clear buffer":
+        buffer.clear()
+        await message.channel.send(buffer)
     
     if message.content[:6] == "do for":
-        result = doResult(message)
-        await message.channel.send(result)
+        doResult(message)
+        len_after = len(buffer)
+        print(len_buffer, len_after)
+        if len_buffer != len_after:
+            for j in range(len_buffer, len_after):
+                await message.channel.send(buffer[j])
+        else:
+            await message.channel.send("No modifications to the buffer")
 
     if message.content[:5] == "print":
         result = execResult(message)
-        await message.channel.send(result)
+        await message.channel.send(buffer[-1])
 
     if message.content.lower() == "ping":
         await message.channel.send(message.content)
@@ -160,5 +177,5 @@ async def sendMission(players_full, missions):
         await asyncio.sleep(15)
         ok[0] = 1
 
-client.run("OTM3NzYwNjQwODc2MDE5NzUz.Yfgbpw.1BzDwnSAgz1hNSD-fWbCzTSRGFk")
+client.run("OTM3NzYwNjQwODc2MDE5NzUz.Yfgbpw.Uaxg4uPYV0m-HKOUEQJxAvdUvw0")
 
