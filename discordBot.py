@@ -18,12 +18,11 @@ ok = [1]
 buffer = []
 
 
-cass.set_riot_api_key("RGAPI-2d972ef5-33b0-43bc-84d7-95a23fea9c02")
+cass.set_riot_api_key("RGAPI-150463ba-0960-4d83-b16b-8d39bc194f6b")
 
 summoner = Summoner(name="Sondo25", region="EUW")
-print("match id: ", summoner.match_history[0].timeline.frames[5].events[2])
+print("match id: ", [summoner.match_history])
 #print([event for event in summoner.match_history[0].timeline.frames[1].events[0].type])
-buffer.append("heh")
 
 
 def resetGame():
@@ -53,11 +52,20 @@ def getRole(player):
             return 1
         return 0
 
+
+def my_exec(code, i):
+    exec('global exec_variable; exec_variable = %s' % code)
+    global exec_variable
+    return exec_variable
+
 def execResult(message):
-    exec("buffer.append(" + message.content[6:] + ")")
+    exec("buffer.append(" + message + ")")
     return buffer
 
 def doResult(message):
+    buffer_len_before = len(buffer)
+    buffer_len_after = len(buffer)
+
     k = 0
     while message.content[7:][k] != ' ':
         k = k + 1
@@ -65,9 +73,11 @@ def doResult(message):
     range_loop = int(message.content[7:][:k])
     for i in range(range_loop):
         print(message.content)
-        exec(message.content[7:][k+1:])
-        
-    return message.content[7:][k+1:]
+        buffer.append(my_exec(message.content[7:][k+1:], i))
+        buffer_len_after+=1
+
+    
+    return [buffer_len_before, buffer_len_after]
 
 
 client = discord.Client()
@@ -95,9 +105,9 @@ async def on_message(message):
         await message.channel.send(buffer)
     
     if message.content[:6] == "do for":
-        doResult(message)
+        result = doResult(message)
         len_after = len(buffer)
-        print(len_buffer, len_after)
+
         if len_buffer != len_after:
             for j in range(len_buffer, len_after):
                 await message.channel.send(buffer[j])
@@ -105,7 +115,7 @@ async def on_message(message):
             await message.channel.send("No modifications to the buffer")
 
     if message.content[:5] == "print":
-        result = execResult(message)
+        result = execResult(message.content[6:])
         await message.channel.send(buffer[-1])
 
     if message.content.lower() == "ping":
